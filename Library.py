@@ -17,3 +17,10 @@ class Library(object):
 
   def songStreamUrl(self, songId):
     return self.client.get_stream_urls(songId)[0]
+
+  def playlists(self):
+    playlists = self.client.get_all_playlist_ids(auto=False,user=True)['user']
+    return dict([(ids[0],name) for name,ids in playlists.items()])
+
+  def playlistSongs(self, playlistId):
+    return self.client.get_playlist_songs(playlistId)
