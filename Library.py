@@ -16,7 +16,7 @@ class Library(object):
     return client
 
   def allSongs(self):
-    if cacheExpired('songs'):
+    if self.cache.isExpired('songs', Library.CACHE_TIME):
       self.cache.write_cache('songs', self.client.get_all_songs())
     return self.cache.load_cache('songs')
 
@@ -24,16 +24,14 @@ class Library(object):
     return self.client.get_stream_urls(songId)[0]
 
   def playlists(self):
-    if cacheExpired('playlists'):
+    if self.cache.isExpired('playlists', Library.CACHE_TIME):
       playlists = self.client.get_all_playlist_ids(auto=False,user=True)['user']
       self.cache.write_cache('playlists',  dict([(ids[0],name) for name,ids in playlists.items()]))
     return self.cache.load_cache('playlists')
 
   def playlistSongs(self, playlistId):
     cacheKey = 'playlist'+playlistId
-    if cacheExpired(cacheKey):
+    if self.cache.isExpired(cacheKey, Library.CACHE_TIME):
       self.cache.write_cache(cacheKey, self.client.get_playlist_songs(playlistId))
     return self.cache.load_cache(cacheKey)
 
-  def cacheExpired(self,key):
-    return self.cache.get_cache_age(key) > Library.CACHE_TIME

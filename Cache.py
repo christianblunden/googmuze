@@ -1,12 +1,12 @@
-import os, pickle
-from datetime import *
+import os, pickle, xbmc, os.path
+from datetime import datetime
 
 class Cache(object):
   
   def __init__(self, settings):
     addonPath = settings.getAddonInfo('path')
     self.cacheDir = os.path.join(xbmc.translatePath('special://masterprofile/addon_data/'), os.path.basename(addonPath))
-    createCacheDir()
+    self.createCacheDir()
 
   def createCacheDir(self):
     if os.path.isdir(self.cacheDir) == False:
@@ -14,24 +14,19 @@ class Cache(object):
 
   def write_cache(self, name, obj):
     path = os.path.join(self.cacheDir, name)
-    exp_path = os.path.join(self.cacheDir, name+'.exp')
-    f = open(path, 'wb')
-    pickle.dump(obj, f)
-    f.close()
-    f = open(exp_path, 'wb')
-    pickle.dump(datetime.now(), f)
-    f.close()
+    with open(path, 'wb') as cache_file:
+      pickle.dump(obj, cache_file)
         
-  def get_cache_age(self, name):
-    path = os.path.join(self.cacheDir, name+'.exp')
-    f = open(path, 'rb')
-    exp = pickle.load(f)
-    f.close()
-    return (datetime.now() - exp).seconds / 60
+  def isExpired(self, name, maxCacheAge):
+    cacheFile = os.path.join(self.cacheDir, name)
+    try:
+      lastModified = datetime.fromtimestamp(os.path.getmtime(cacheFile))
+      cacheAge = (datetime.now() - lastModified).seconds / 60
+      return cacheAge > maxCacheAge
+    except OSError:
+      return True
       
   def load_cache(self, name):
     path = os.path.join(self.cacheDir, name)
-    f = open(path, 'rb')
-    ret = pickle.load(f)
-    f.close()
-    return ret
+    with open(path, 'rb') as cache:
+      return pickle.load(cache)
