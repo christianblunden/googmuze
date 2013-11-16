@@ -48,7 +48,7 @@ class Navigation(object):
     url = sys.argv[0] + '?' + urllib.urlencode({Navigation.ACTION:Navigation.PLAY_SONG,Navigation.SONG_ID:songId,Navigation.SONG_TITLE:songTitle})
     return url,li
 
-  def addSongs(self, songs):
+  def listSongs(self, songs):
     songItems = [self.songItem(track) for track in songs]
     xbmcplugin.addDirectoryItems(int(sys.argv[1]), songItems)
 
@@ -60,7 +60,7 @@ class Navigation(object):
     xbmcplugin.addDirectoryItems(int(sys.argv[1]), menuItems)
 
   def listAllSongs(self, parameters):
-    addSongs(self.library.allSongs())
+    self.listSongs(self.library.allSongs())
 
   def listAllPlaylists(self, parameters):
     menuItems = [self.playlistItem(name,id) for id,name in self.library.playlists().items()]
@@ -68,7 +68,7 @@ class Navigation(object):
 
   def listPlaylist(self, parameters):
     playlistId = parameters.get(Navigation.PLAYLIST_ID, None)
-    addSongs(self.library.playlistSongs(playlistId))
+    self.listSongs(self.library.playlistSongs(playlistId))
 
   def playSong(self, parameters):
     title = parameters.get(Navigation.SONG_TITLE, None)
